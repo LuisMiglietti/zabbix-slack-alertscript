@@ -26,10 +26,10 @@ This [`slack.sh` script](https://github.com/ericoc/zabbix-slack-alertscript/raw/
 
 	[root@zabbix ~]# grep AlertScriptsPath /etc/zabbix/zabbix_server.conf
 	### Option: AlertScriptsPath
-	AlertScriptsPath=/usr/local/share/zabbix/alertscripts
+	AlertScriptsPath=/usr/lib/zabbix/alertscripts/slack.sh
 
-	[root@zabbix ~]# ls -lh /usr/local/share/zabbix/alertscripts/slack.sh
-	-rwxr-xr-x 1 root root 1.4K Dec 27 13:48 /usr/local/share/zabbix/alertscripts/slack.sh
+	[root@zabbix ~]# ls -lh /usr/lib/zabbix/alertscripts/slack.sh
+	-rwxr-xr-x 1 root root 1.4K Dec 27 13:48 /usr/lib/zabbix/alertscripts/slack.sh
 
 If you do change `AlertScriptsPath` (or any other values) within `zabbix_server.conf`, a restart of the Zabbix server software is required.
 
@@ -84,11 +84,37 @@ Then, create a "Slack" user on the "Users" sub-tab of the "Administration" tab w
 
 ![Zabbix User](https://pictures.ericoc.com/github/zabbix-user.png "Zabbix User")
 
-Finally, an action can then be created on the "Actions" sub-tab of the "Configuration" tab within the Zabbix servers web interface to notify the Zabbix "Slack" user ensuring that the "Subject" is "PROBLEM" for "Default message" and "RECOVERY" should you choose to send a "Recovery message".
+Finally, an action can then be created on the "Actions" sub-tab of the "Configuration" tab within the Zabbix servers web interface to notify the Zabbix "Slack" user.
 
-Keeping the messages short is probably a good idea; use something such as the following for the contents of each message:
+For Operations
 
-	{TRIGGER.NAME} - {HOSTNAME} ({IPADDRESS})
+* "Subject"
+```
+"PROBLEM - {TRIGGER.SEVERITY}"
+```
+* "Default message"
+```
+TRIGGER: {TRIGGER.NAME}
+TRIGGER STATUS: {TRIGGER.STATUS} - {TRIGGER.SEVERITY}
+ITEM VALUE: {ITEM.VALUE1}
+HOST: {HOST.NAME1} - {IPADDRESS}
+```
+
+
+For Recovery Operations
+
+* "Subject"
+```
+RECOVERED
+```
+* "Default message"
+```
+TRIGGER: {TRIGGER.NAME}
+TRIGGER STATUS: {TRIGGER.STATUS}
+ITEM VALUE: {ITEM.VALUE1}
+HOST: {HOST.NAME1} - {IPADDRESS}
+```
+
 
 Additionally, you can have multiple different Zabbix users each with "Slack" media types that notify unique Slack users or channels upon different triggered Zabbix actions.
 
@@ -98,12 +124,9 @@ Testing
 -------
 Assuming that you have set a valid Slack web-hook URL within your "slack.sh" file, you can execute the script manually (as opposed to via Zabbix) from Bash on a terminal:
 
-	$ bash slack.sh '@ericoc' PROBLEM 'Oh no! Something is wrong!'
+	$ bash slack.sh '@someone' 'PROBLEM - High' 'Something is wrong!'
 
 Alerting a specific user name results in the message actually coming from the "slackbot" user using a sort-of "spoofed" user name within the message. A channel alert is sent as you would normally expect from whatever user name you specify in "slack.sh":
-
-![Slack Testing](https://pictures.ericoc.com/github/slack-example.png "Slack Testing")
-
 
 More Information
 ----------------
